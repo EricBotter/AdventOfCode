@@ -15,11 +15,7 @@ foreach (var lineMatches in lines.Select(line => numberRegex.Matches(line)))
 firstList.Sort();
 secondList.Sort();
 
-var sum = 0;
-for (var i = 0; i < firstList.Count; i++)
-{
-    sum += Math.Abs(firstList[i] - secondList[i]);
-}
+var sum = firstList.Sum(num => num * secondList.Count(x => x == num));
 
 Console.WriteLine(sum);
 
