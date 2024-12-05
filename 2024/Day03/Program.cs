@@ -2,21 +2,36 @@
 
 var numberRegex = NumberRegex();
 var mulRegex = MulRegex();
+var doRegex = DoRegex();
+var dontRegex = DontRegex();
 
 var input = File.ReadAllText("input.txt");
 
-var matches = mulRegex.Matches(input);
+var mulMatches = mulRegex.Matches(input);
+var doMatches = doRegex.Matches(input);
+var dontMatches = dontRegex.Matches(input);
 
-var mults = matches.Select(match =>
+var allMatches = mulMatches.Concat(doMatches).Concat(dontMatches).OrderBy(match => match.Index);
+
+var mulEnable = true;
+var sum = 0;
+foreach (var match in allMatches)
 {
-    var operands = numberRegex.Matches(match.Value);
-    return (int.Parse(operands[0].Value), int.Parse(operands[1].Value));
-});
+    mulEnable = match.Value switch
+    {
+        "don't()" => false,
+        "do()" => true,
+        _ => mulEnable
+    };
 
-var sum = mults.Sum(mult => mult.Item1 * mult.Item2);
+    if (mulEnable && match.Value.StartsWith("mul"))
+    {
+        var operands = numberRegex.Matches(match.Value);
+        sum += int.Parse(operands[0].Value) * int.Parse(operands[1].Value);
+    }
+}
 
 Console.WriteLine(sum);
-
 
 partial class Program
 {
@@ -26,4 +41,9 @@ partial class Program
     [GeneratedRegex(@"mul\([0-9]+,[0-9]+\)")]
     private static partial Regex MulRegex();
 
+    [GeneratedRegex(@"do\(\)")]
+    private static partial Regex DoRegex();
+
+    [GeneratedRegex(@"don't\(\)")]
+    private static partial Regex DontRegex();
 }
