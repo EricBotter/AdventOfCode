@@ -1,13 +1,7 @@
 ﻿List<Direction> directions =
 [
-    Direction.NorthEast, Direction.SouthEast, Direction.SouthWest, Direction.NorthWest
-];
-List<List<char>> validDiagonals =
-[
-    ['M', 'M', 'S', 'S'],
-    ['M', 'S', 'S', 'M'],
-    ['S', 'S', 'M', 'M'],
-    ['S', 'M', 'M', 'S']
+    Direction.North, Direction.East, Direction.South, Direction.West,
+    Direction.NorthWest, Direction.NorthEast, Direction.SouthWest, Direction.SouthEast
 ];
 
 var lines = File.ReadAllLines("input.txt");
@@ -24,21 +18,31 @@ for (var j = 0; j < sizeX; j++)
 }
 
 var sum = 0;
-for (var i = 1; i < sizeX - 1; i++)
+for (var i = 0; i < sizeX; i++)
 {
-    for (var j = 1; j < sizeY - 1; j++)
+    for (var j = 0; j < sizeY; j++)
     {
         var currentLocation = new Location(i, j);
 
-        if (map.At(currentLocation) == 'A')
+        if (map.At(currentLocation) == 'X')
         {
-            var characters = directions
-                .Select(direction => currentLocation.Move(direction))
-                .Select(location => map.At(location))
-                .ToList();
+            foreach (var direction in directions)
+            {
+                var indexLocation = currentLocation.Move(direction);
+                if (indexLocation.IsOob(sizeX, sizeY) || map.At(indexLocation) != 'M')
+                    continue;
 
-            if (validDiagonals.Any(diagonal => diagonal.SequenceEqual(characters)))
+                indexLocation = indexLocation.Move(direction);
+                if (indexLocation.IsOob(sizeX, sizeY) || map.At(indexLocation) != 'A')
+                    continue;
+
+                indexLocation = indexLocation.Move(direction);
+                if (indexLocation.IsOob(sizeX, sizeY) || map.At(indexLocation) != 'S')
+                    continue;
+
+                Console.WriteLine($"XMAS found: {currentLocation}, {direction}");
                 sum++;
+            }
         }
     }
 }
