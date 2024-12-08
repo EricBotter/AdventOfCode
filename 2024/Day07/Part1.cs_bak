@@ -25,8 +25,7 @@ record Calibration(long Target, List<long> Operands)
                 return currentValue == Target;
 
             return InternalIsValid(currentValue + remainingValues[0], remainingValues[1..])
-                   || InternalIsValid(currentValue * remainingValues[0], remainingValues[1..])
-                   || InternalIsValid(long.Parse(currentValue.ToString() + remainingValues[0]), remainingValues[1..]);
+                   || InternalIsValid(currentValue * remainingValues[0], remainingValues[1..]);
         }
     }
 }
