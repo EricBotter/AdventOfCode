@@ -22,9 +22,7 @@ HashSet<Location> validLocations = [];
 foreach (var antennaGroup in antennae.GroupBy(antenna => antenna.Frequency))
 {
     var newAntinodes = antennaGroup.SelectMany(a1 => antennaGroup.Where(a2 => a2 != a1).Select(a2 => (a1, a2)))
-        .Select(tuple => tuple.a1.GetAntiNodesFor(tuple.a2))
-        .SelectMany(tuple => new[] { tuple.Item1, tuple.Item2 })
-        .Where(location => !location.IsOob(sizeX, sizeY));
+        .SelectMany(tuple => tuple.a1.GetAntiNodesFor(tuple.a2, sizeX, sizeY));
 
     foreach (var antinode in newAntinodes)
     {
@@ -41,40 +39,22 @@ record Location(int X, int Y)
 
 record Antenna(char Frequency, Location Location)
 {
-    public (Location, Location) GetAntiNodesFor(Antenna antenna)
+    public IEnumerable<Location> GetAntiNodesFor(Antenna antenna, int sizeX, int sizeY)
     {
-        return (
-            new Location(Location.X - (antenna.Location.X - Location.X), Location.Y - (antenna.Location.Y - Location.Y)),
-            new Location(antenna.Location.X - (Location.X - antenna.Location.X), antenna.Location.Y - (Location.Y - antenna.Location.Y))
-        );
-    }
-}
+        var frequency = new Location(antenna.Location.X - Location.X, antenna.Location.Y - Location.Y);
 
-public class MultiValueDictionary<Key, Value> : Dictionary<Key, List<Value>>
-{
-    public void Add(Key key, Value value)
-    {
-        List<Value> values;
-        if (!this.TryGetValue(key, out values))
+        var currentFrequency = Location;
+        while (!currentFrequency.IsOob(sizeX, sizeY))
         {
-            values = new List<Value>();
-            this.Add(key, values);
+            yield return currentFrequency;
+            currentFrequency = new Location(currentFrequency.X - frequency.X, currentFrequency.Y - frequency.Y);
         }
 
-        values.Add(value);
+        currentFrequency = new Location(Location.X + frequency.X, Location.Y + frequency.Y);
+        while (!currentFrequency.IsOob(sizeX, sizeY))
+        {
+            yield return currentFrequency;
+            currentFrequency = new Location(currentFrequency.X + frequency.X, currentFrequency.Y + frequency.Y);
+        }
     }
-}
-
-static class Exts
-{
-    public static ref T At<T>(this T[,] source, Location location) => ref source[location.X, location.Y];
-}
-
-partial class Program
-{
-    [GeneratedRegex("[0-9]+")]
-    private static partial Regex NumberRegex();
-
-    private static List<long> ParseLineToNumberList(string line) =>
-        NumberRegex().Matches(line).Select(match => long.Parse(match.Value)).ToList();
 }
