@@ -1,4 +1,6 @@
-﻿var lines = File.ReadAllLines("input.txt");
+﻿using System.Text.RegularExpressions;
+
+var lines = File.ReadAllLines("input.txt");
 
 var sizeX = lines[0].Length;
 var sizeY = lines.Length;
@@ -17,20 +19,20 @@ for (var j = 0; j < sizeY; j++)
 {
     var location = new Location(i, j);
     if (map.At(location) == '0')
-        sum += AnalyzeTrailhead('0', location);
+        sum += AnalyzeTrailhead('0', location).Count;
 }
 
 Console.WriteLine(sum);
 
-int AnalyzeTrailhead(char currentHeight, Location currentLocation)
+HashSet<Location> AnalyzeTrailhead(char currentHeight, Location currentLocation)
 {
     if (currentHeight == '9')
-        return 1;
+        return [currentLocation];
     return Enum.GetValues<Direction>().Select(dir => currentLocation.Move(dir))
         .Where(loc => !loc.IsOob(sizeX, sizeY))
         .Where(loc => map.At(loc) == currentHeight + 1)
-        .Select(loc => AnalyzeTrailhead((char)(currentHeight + 1), loc))
-        .Sum();
+        .SelectMany(loc => AnalyzeTrailhead((char)(currentHeight + 1), loc))
+        .ToHashSet();
 }
 
 
