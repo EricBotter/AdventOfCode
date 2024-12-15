@@ -1,47 +1,42 @@
 ﻿using System.Text.RegularExpressions;
 
+var cache = new Dictionary<(long, long), long>();
+
+
 var line = File.ReadAllText("input.txt").Trim();
 
 var numbers = ParseNumbersInLine(line);
 
-List<long> newNumbers = [];
+var sum = numbers.Sum(x => StonesForNumber(x, 75));
 
-for (var i = 0; i < 25; i++)
+Console.WriteLine(sum);
+
+long StonesForNumber(long n, long iterationsLeft)
 {
-    // Console.WriteLine($"Iteration {i}");
-    foreach (var n in numbers)
-    {
-        if (n == 0)
-        {
-            // Console.WriteLine("  0 to 1");
-            newNumbers.Add(1);
-        }
-        else
-        {
-            var length = n.ToString().Length;
-            if (length % 2 == 0)
-            {
-                // Console.Write($"  {n} to be split to ");
+    if (cache.TryGetValue((n, iterationsLeft), out var value))
+        return value;
 
-                var limit = Math.Pow(10, length / 2);
-                newNumbers.Add((int)(n / limit));
-                newNumbers.Add((int)(n % limit));
-                // Console.WriteLine($"{newNumbers[^2]} and {newNumbers[^1]}");
-            }
-            else
-            {
-                newNumbers.Add(n * 2024);
-                // Console.WriteLine($"  {n} to {newNumbers[^1]}");
-            }
-        }
+    if (iterationsLeft == 0)
+        return 1;
+
+    if (n == 0)
+        return CacheOp(StonesForNumber(1, iterationsLeft - 1));
+
+    var length = n.ToString().Length;
+    if (length % 2 == 0)
+    {
+        var limit = Math.Pow(10, length / 2);
+        return CacheOp(StonesForNumber((long)(n / limit), iterationsLeft - 1) + StonesForNumber((long)(n % limit), iterationsLeft - 1));
     }
 
-    numbers = [..newNumbers];
-    newNumbers.Clear();
+    return CacheOp(StonesForNumber(n * 2024, iterationsLeft - 1));
+
+    long CacheOp(long result)
+    {
+        cache[(n, iterationsLeft)] = result;
+        return result;
+    }
 }
-
-Console.WriteLine(numbers.Count);
-
 
 partial class Program
 {
