@@ -7,16 +7,10 @@ var sizeY = lines.Length;
 
 var map = new char[sizeX, sizeY];
 
-var initialPosition = new Location(0, 0);
 for (var i = 0; i < sizeY; i++)
 for (var j = 0; j < sizeX; j++)
 {
     map[j, i] = lines[i][j];
-    if (map[j, i] == '^')
-    {
-        initialPosition = new Location(j, i);
-        map[j, i] = 'X';
-    }
 }
 
 
@@ -45,11 +39,11 @@ record Location(int X, int Y)
     public bool IsOob(int maxX, int maxY) => X < 0 || Y < 0 || X >= maxX || Y >= maxY;
 }
 
-public class MultiValueDictionary<Key, Value> : Dictionary<Key, List<Value>> {
-    public void Add(Key key, Value value) {
-        List<Value> values;
+public class MultiValueDictionary<TKey, TValue> : Dictionary<TKey, List<TValue>> {
+    public void Add(TKey key, TValue value) {
+        List<TValue> values;
         if (!TryGetValue(key, out values)) {
-            values = new List<Value>();
+            values = new List<TValue>();
             Add(key, values);
         }
         values.Add(value);
@@ -59,6 +53,11 @@ public class MultiValueDictionary<Key, Value> : Dictionary<Key, List<Value>> {
 static class Exts
 {
     public static ref T At<T>(this T[,] source, Location location) => ref source[location.X, location.Y];
+
+    public static IEnumerable<T> ToEnumerable<T>(this T[,] source, int sizeX, int sizeY) =>
+        Enumerable.Range(0, sizeX)
+            .SelectMany(x => Enumerable.Range(0, sizeY).Select(y => (x, y)))
+            .Select(t => source[t.x, t.y]);
 }
 
 partial class Program
@@ -66,6 +65,14 @@ partial class Program
     [GeneratedRegex("[0-9]+")]
     private static partial Regex NumberRegex();
 
-    public static List<int> ParseNumbersInLine(string line) =>
+    private static List<int> ParseNumbersInLine(string line) =>
         NumberRegex().Matches(line).Select(match => match.Value).Select(int.Parse).ToList();
+
+    private static IEnumerable<Direction> Directions() => Enum.GetValues<Direction>();
+
+    private static IEnumerable<Location> AjdacentTo(Location loc, int sizeX, int sizeY) =>
+        Directions()
+            .Select(loc.Move)
+            .Where(l => !l.IsOob(sizeX, sizeY));
+
 }
