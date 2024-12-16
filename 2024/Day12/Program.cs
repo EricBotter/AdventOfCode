@@ -5,6 +5,7 @@ var sizeY = lines.Length;
 
 var map = new char[sizeX, sizeY];
 var zoneMap = new int[sizeX, sizeY];
+var sidesMap = new int[sizeX, sizeY];
 
 for (var i = 0; i < sizeY; i++)
 for (var j = 0; j < sizeX; j++)
@@ -37,11 +38,13 @@ for (var y = 0; y < sizeY; y++)
 
 var areas = new Dictionary<int, int>();
 var perimeters = new Dictionary<int, int>();
+var sides = new Dictionary<int, int>();
 
 for (var i = 1; i <= zoneIdx; i++)
 {
     areas[i] = 0;
     perimeters[i] = 0;
+    sides[i] = 0;
 }
 
 for (var x = 0; x < sizeX; x++)
@@ -53,13 +56,82 @@ for (var y = 0; y < sizeY; y++)
     areas[currentZone]++;
     perimeters[currentZone] += 4 - AjdacentTo(currentLocation, sizeX, sizeY)
         .Where(loc => zoneMap.At(loc) == currentZone)
-        .Count(loc => map.At(loc) == map.At(currentLocation));
+        .Count(loc => zoneMap.At(loc) == zoneMap.At(currentLocation));
+
+    var currentSides = 4 - AjdacentTo(currentLocation, sizeX, sizeY)
+        .Where(loc => zoneMap.At(loc) == currentZone)
+        .Count(loc => zoneMap.At(loc) == zoneMap.At(currentLocation));
+
+    // from: https://github.com/seapagan/aoc-2024/blob/1c219172f9ca5ef834d19474684636230f353e96/12/main.py#L61
+    var northLocation = currentLocation.Move(Direction.North);
+    var southLocation = currentLocation.Move(Direction.South);
+    var westLocation = currentLocation.Move(Direction.West);
+    var eastLocation = currentLocation.Move(Direction.East);
+
+    //check west location
+    if (!westLocation.IsOob(sizeX, sizeY) && zoneMap.At(westLocation) == currentZone)
+    {
+        var westNorth = westLocation.Move(Direction.North);
+
+        if (!westNorth.IsOob(sizeX, sizeY) && zoneMap.At(westNorth) != currentZone
+                                           && zoneMap.At(northLocation) != currentZone)
+        {
+            currentSides--;
+        }
+        if (westNorth.IsOob(sizeX, sizeY) && northLocation.IsOob(sizeX, sizeY))
+        {
+            currentSides--;
+        }
+
+        var westSouth = westLocation.Move(Direction.South);
+
+        if (!westSouth.IsOob(sizeX, sizeY) && zoneMap.At(westSouth) != currentZone
+                                           && zoneMap.At(southLocation) != currentZone)
+        {
+            currentSides--;
+        }
+        if (westSouth.IsOob(sizeX, sizeY) && southLocation.IsOob(sizeX, sizeY))
+        {
+            currentSides--;
+        }
+    }
+
+    //check north location
+    if (!northLocation.IsOob(sizeX, sizeY) && zoneMap.At(northLocation) == currentZone)
+    {
+        var northWest = northLocation.Move(Direction.West);
+
+        if (!northWest.IsOob(sizeX, sizeY) && zoneMap.At(northWest) != currentZone
+                                           && zoneMap.At(westLocation) != currentZone)
+        {
+            currentSides--;
+        }
+        if (northWest.IsOob(sizeX, sizeY) && westLocation.IsOob(sizeX, sizeY))
+        {
+            currentSides--;
+        }
+
+        var northEast = northLocation.Move(Direction.East);
+
+        if (!northEast.IsOob(sizeX, sizeY) && zoneMap.At(northEast) != currentZone
+                                           && zoneMap.At(eastLocation) != currentZone)
+        {
+            currentSides--;
+        }
+        if (northEast.IsOob(sizeX, sizeY) && eastLocation.IsOob(sizeX, sizeY))
+        {
+            currentSides--;
+        }
+    }
+
+    sidesMap.At(currentLocation) = currentSides;
+    sides[currentZone] += currentSides;
 }
 
 var sum = 0;
 for (var i = 1; i <= zoneIdx; i++)
 {
-    sum += areas[i] * perimeters[i];
+    sum += areas[i] * sides[i];
 }
 
 Console.WriteLine(sum);
