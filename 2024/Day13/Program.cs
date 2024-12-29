@@ -3,7 +3,7 @@
 var arcadeInput = File.ReadAllText("input.txt").Split("\n\n");
 
 var arcades = arcadeInput.Select(ParseNumbersInLine).Select(ints =>
-    new Arcade(new Offset(ints[0], ints[1]), new Offset(ints[2], ints[3]), new Location(ints[4], ints[5])));
+    new Arcade(new Offset(ints[0], ints[1]), new Offset(ints[2], ints[3]), new Location(10000000000000 + ints[4], 10000000000000 + ints[5])));
 
 var sum = arcades
     .Select(arcade => arcade.Solve())
@@ -14,55 +14,40 @@ Console.WriteLine(sum);
 
 record Arcade(Offset ButtonA, Offset ButtonB, Location Prize)
 {
-    public int Solve()
+    public long Solve()
     {
-        var open = new Dictionary<Location, (double f, int g)> { {new Location(0, 0), (0, 0)} };
-        var closed = new Dictionary<Location, (double f, int g)>();
+        // got help from: https://blog.jverkamp.com/2024/12/13/aoc-2024-day-13-cramerinator
+        // apologies for these variable names...
+        var axpyaypx = ButtonA.X * Prize.Y - ButtonA.Y * Prize.X;
+        var axbybxay = ButtonA.X * ButtonB.Y - ButtonB.X * ButtonA.Y;
 
-        while (open.Count > 0)
-        {
-            var current = open.MinBy(item => item.Value);
+        if (axpyaypx % axbybxay != 0)
+            return -1;
 
-            open.Remove(current.Key);
+        var b = axpyaypx / axbybxay;
 
-            if (current.Key.IsOob(Prize.X, Prize.Y))
-                continue;
+        var pxbbx = Prize.X - b * ButtonB.X;
+        if (pxbbx % ButtonA.X != 0)
+            return -1;
 
-            if (current.Key == Prize)
-                return current.Value.g;
+        var a = pxbbx / ButtonA.X;
 
-            foreach (var (buttonOffset, buttonCost) in new[] { (ButtonA, 3), (ButtonB, 1) })
-            {
-                var moved = current.Key.Move(buttonOffset);
-                var cost = current.Value.g + buttonCost + moved.DistanceFrom(Prize);
-
-                if (open.TryGetValue(moved, out var value) && value.f <= cost)
-                    continue;
-                if (closed.TryGetValue(moved, out var value2) && value2.f <= cost)
-                    continue;
-
-                open[moved] = (cost, current.Value.g + buttonCost);
-            }
-
-            closed[current.Key] = current.Value;
-        }
-
-        return closed.GetValueOrDefault(Prize, (0, -1)).g;
+        return a * 3 + b;
     }
 }
 
-record Offset(int X, int Y)
+readonly record struct Offset(long X, long Y)
 {
 }
 
-record Location(long X, long Y)
+readonly record struct Location(long X, long Y)
 {
     public Location Move(Offset offset) => new(X + offset.X, Y + offset.Y);
 
     public double DistanceFrom(Location other) =>
         Math.Sqrt(Math.Pow(Math.Abs(X - other.X), 2) + Math.Pow(Math.Abs(Y - other.Y), 2));
 
-    public bool IsOob(long maxX, long maxY) => X > maxX || Y > maxY;
+    public bool IsOob(long maxX, long maxY) => X >= maxX || Y >= maxY;
 }
 
 partial class Program
@@ -70,6 +55,6 @@ partial class Program
     [GeneratedRegex("[0-9]+")]
     private static partial Regex NumberRegex();
 
-    private static List<int> ParseNumbersInLine(string line) =>
-        NumberRegex().Matches(line).Select(match => match.Value).Select(int.Parse).ToList();
+    private static List<long> ParseNumbersInLine(string line) =>
+        NumberRegex().Matches(line).Select(match => match.Value).Select(long.Parse).ToList();
 }

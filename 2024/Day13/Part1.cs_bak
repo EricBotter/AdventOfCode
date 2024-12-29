@@ -1,0 +1,75 @@
+using System.Text.RegularExpressions;
+
+var arcadeInput = File.ReadAllText("input.txt").Split("\n\n");
+
+var arcades = arcadeInput.Select(ParseNumbersInLine).Select(ints =>
+    new Arcade(new Offset(ints[0], ints[1]), new Offset(ints[2], ints[3]), new Location(ints[4], ints[5])));
+
+var sum = arcades
+    .Select(arcade => arcade.Solve())
+    .Where(cost => cost != -1)
+    .Sum();
+
+Console.WriteLine(sum);
+
+record Arcade(Offset ButtonA, Offset ButtonB, Location Prize)
+{
+    public int Solve()
+    {
+        var open = new Dictionary<Location, (double f, int g)> { {new Location(0, 0), (0, 0)} };
+        var closed = new Dictionary<Location, (double f, int g)>();
+
+        while (open.Count > 0)
+        {
+            var current = open.MinBy(item => item.Value);
+
+            open.Remove(current.Key);
+
+            if (current.Key.IsOob(Prize.X, Prize.Y))
+                continue;
+
+            if (current.Key == Prize)
+                return current.Value.g;
+
+            foreach (var (buttonOffset, buttonCost) in new[] { (ButtonA, 3), (ButtonB, 1) })
+            {
+                var moved = current.Key.Move(buttonOffset);
+                var cost = current.Value.g + buttonCost + moved.DistanceFrom(Prize);
+
+                if (open.TryGetValue(moved, out var value) && value.f <= cost)
+                    continue;
+                if (closed.TryGetValue(moved, out var value2) && value2.f <= cost)
+                    continue;
+
+                open[moved] = (cost, current.Value.g + buttonCost);
+            }
+
+            closed[current.Key] = current.Value;
+        }
+
+        return closed.GetValueOrDefault(Prize, (0, -1)).g;
+    }
+}
+
+record Offset(int X, int Y)
+{
+}
+
+record Location(long X, long Y)
+{
+    public Location Move(Offset offset) => new(X + offset.X, Y + offset.Y);
+
+    public double DistanceFrom(Location other) =>
+        Math.Sqrt(Math.Pow(Math.Abs(X - other.X), 2) + Math.Pow(Math.Abs(Y - other.Y), 2));
+
+    public bool IsOob(long maxX, long maxY) => X > maxX || Y > maxY;
+}
+
+partial class Program
+{
+    [GeneratedRegex("[0-9]+")]
+    private static partial Regex NumberRegex();
+
+    private static List<int> ParseNumbersInLine(string line) =>
+        NumberRegex().Matches(line).Select(match => match.Value).Select(int.Parse).ToList();
+}
