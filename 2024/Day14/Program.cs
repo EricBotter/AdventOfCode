@@ -8,30 +8,52 @@ var robots = lines.Select(ParseNumbersInLine)
 
 robots.ForEach(robot => robot.BuildLoop());
 
-var movedRobots = robots
-    .Select(robot => robot.Move(100))
-    .ToList();
-
-var output = movedRobots.Select(robot => robot.Location switch
-    {
-        ( < SizeX/2, < SizeY/2 ) => 1,
-        ( > SizeX/2, < SizeY/2 ) => 2,
-        ( < SizeX/2, > SizeY/2 ) => 3,
-        ( > SizeX/2, > SizeY/2 ) => 4,
-        _ => -1
-    })
-    .Where(quadrant => quadrant != -1)
-    .GroupBy(x => x)
-    .Aggregate(1, (i, j) => i * j.Count());
-
-Console.WriteLine(output);
-
-readonly struct Robot(Location location, Offset velocity)
+var count = 0;
+while (true)
 {
-    public Location Location { get; private init; } = location;
+    count++;
+    robots.ForEach(robot => robot.Move(8258));
+
+    var map = robots.GroupBy(robot => robot.Location)
+        .ToDictionary(grouping => grouping.Key, grouping => grouping.Count());
+
+    for (var i = 0; i < SizeY; i++)
+    {
+        for (var j = 0; j < SizeX; j++)
+        {
+            if (map.TryGetValue(new Location(j, i), out var value))
+                Console.Write(value);
+            else
+                Console.Write('.');
+        }
+        Console.WriteLine();
+    }
+
+    Console.ReadLine();
+    Console.Clear();
+
+    // var mapX = robots.GroupBy(robot => robot.Location.X)
+    //     .ToDictionary(grouping => grouping.Key, grouping => grouping.Count());
+    // var mapY = robots.GroupBy(robot => robot.Location.Y)
+    //     .ToDictionary(grouping => grouping.Key, grouping => grouping.Count());
+    //
+    // if (mapX.Count == 89 && mapY.Count == 88)
+    // {
+    //     Console.WriteLine(mapX.Count);
+    //
+    //     Console.WriteLine(count);
+    //     Console.ReadLine();
+    //     Console.Clear();
+    // }
+}
+
+class Robot(Location location, Offset velocity)
+{
+    public Location Location { get; private set; } = location;
     private Offset Velocity { get; } = velocity;
 
     private readonly List<Location> _loop = [];
+    private int _loopPos = 0;
 
     public void BuildLoop()
     {
@@ -43,7 +65,12 @@ readonly struct Robot(Location location, Offset velocity)
         } while (current != Location);
     }
 
-    public Robot Move(int times) => this with { Location = _loop[times % _loop.Count] };
+    public Robot Move(int times)
+    {
+        _loopPos = (_loopPos + times) % _loop.Count;
+        Location = _loop[_loopPos];
+        return this;
+    }
 }
 
 readonly record struct Offset(int X, int Y)
