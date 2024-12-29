@@ -23,7 +23,11 @@ enum Direction
     East,
 }
 
-record Location(int X, int Y)
+readonly record struct Offset(int X, int Y)
+{
+}
+
+readonly record struct Location(int X, int Y)
 {
     public Location Move(Direction direction) =>
     direction switch
@@ -36,10 +40,13 @@ record Location(int X, int Y)
         _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
     };
 
+    public Location Move(Offset offset) => new(X + offset.X, Y + offset.Y);
+
     public bool IsOob(int maxX, int maxY) => X < 0 || Y < 0 || X >= maxX || Y >= maxY;
 }
 
-public class MultiValueDictionary<TKey, TValue> : Dictionary<TKey, List<TValue>> {
+public class MultiValueDictionary<TKey, TValue> : Dictionary<TKey, List<TValue>> where TKey : notnull
+{
     public void Add(TKey key, TValue value) {
         List<TValue> values;
         if (!TryGetValue(key, out values)) {
