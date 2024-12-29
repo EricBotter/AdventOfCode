@@ -1,0 +1,148 @@
+{
+    "laps": [
+        {
+            "abstime": "00:08:48.12",
+            "note": "Day 01 Part 1",
+            "reltime": "00:08:48.12",
+            "time": 528129
+        },
+        {
+            "abstime": "00:13:37.08",
+            "note": "Day 01 Part 2",
+            "reltime": "00:04:48.95",
+            "time": 817080
+        },
+        {
+            "abstime": "00:23:50.40",
+            "note": "Day 02 Part 1",
+            "reltime": "00:10:13.32",
+            "time": 1430405
+        },
+        {
+            "abstime": "00:57:18.84",
+            "note": "Day 02 Part 2 Naive",
+            "reltime": "00:33:28.43",
+            "time": 3438840
+        },
+        {
+            "abstime": "01:03:54.84",
+            "note": "Day 03 Part 1",
+            "reltime": "00:06:36.00",
+            "time": 3834841
+        },
+        {
+            "abstime": "01:11:43.40",
+            "note": "Day 03 Part 2",
+            "reltime": "00:07:48.56",
+            "time": 4303408
+        },
+        {
+            "abstime": "01:35:33.71",
+            "note": "Day 04 Part 1",
+            "reltime": "00:23:50.30",
+            "time": 5733717
+        },
+        {
+            "abstime": "01:47:48.26",
+            "note": "Day 04 Part 2",
+            "reltime": "00:12:14.55",
+            "time": 6468269
+        },
+        {
+            "abstime": "02:00:55.82",
+            "note": "Day 05 Part 1",
+            "reltime": "00:13:07.55",
+            "time": 7255826
+        },
+        {
+            "abstime": "02:09:48.49",
+            "note": "Day 05 Part 2",
+            "reltime": "00:08:52.66",
+            "time": 7788495
+        },
+        {
+            "abstime": "02:21:45.05",
+            "note": "Day 06 Part 1",
+            "reltime": "00:11:56.55",
+            "time": 8505050
+        },
+        {
+            "abstime": "02:35:29.13",
+            "note": "Day 06 Part 2 Naive",
+            "reltime": "00:13:44.08",
+            "time": 9329137
+        },
+        {
+            "abstime": "02:50:52.62",
+            "note": "Day 07 Part 1",
+            "reltime": "00:15:23.48",
+            "time": 10252620
+        },
+        {
+            "abstime": "02:53:07.65",
+            "note": "Day 07 Part 2",
+            "reltime": "00:02:15.03",
+            "time": 10387655
+        },
+        {
+            "abstime": "03:16:40.64",
+            "note": "Day 08 Part 1",
+            "reltime": "00:23:32.98",
+            "time": 11800644
+        },
+        {
+            "abstime": "03:30:58.29",
+            "note": "Day 08 Part 2",
+            "reltime": "00:14:17.64",
+            "time": 12658293
+        },
+        {
+            "abstime": "03:50:47.59",
+            "note": "Day 09 Part 1",
+            "reltime": "00:19:49.29",
+            "time": 13847592
+        },
+        {
+            "abstime": "04:16:32.26",
+            "note": "Day 09 Part 2",
+            "reltime": "00:25:44.67",
+            "time": 15392268
+        },
+        {
+            "abstime": "04:33:08.99",
+            "note": "Day 10 Part 1",
+            "reltime": "00:16:36.72",
+            "time": 16388990
+        },
+        {
+            "abstime": "04:36:43.24",
+            "note": "Day 10 Part 2",
+            "reltime": "00:03:34.25",
+            "time": 16603244
+        },
+        {
+            "abstime": "04:51:45.16",
+            "note": "Day 11 Part 1",
+            "reltime": "00:15:01.92",
+            "time": 17505164
+        },
+        {
+            "abstime": "05:38:16.58",
+            "note": "Day 11 Part 2",
+            "reltime": "00:46:31.42",
+            "time": 20296587
+        },
+        {
+            "abstime": "06:10:22.51",
+            "note": "Day 12 Part 1",
+            "reltime": "00:32:05.92",
+            "time": 22222512
+        },
+        {
+            "abstime": "07:02:42.20",
+            "note": "Day 12 Part 2 Copied",
+            "reltime": "00:52:19.69",
+            "time": 25362202
+        }
+    ]
+}
