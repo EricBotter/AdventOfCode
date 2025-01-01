@@ -71,6 +71,26 @@ static class Exts
         _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
     };
 
+    public static Direction RotateRight(this Direction direction) => direction switch
+    {
+        Direction.North => Direction.East,
+        Direction.East => Direction.South,
+        Direction.South => Direction.West,
+        Direction.West => Direction.North,
+
+        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+    };
+
+    public static Direction RotateLeft(this Direction direction) => direction switch
+    {
+        Direction.North => Direction.West,
+        Direction.East => Direction.North,
+        Direction.South => Direction.East,
+        Direction.West => Direction.South,
+
+        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+    };
+
     public static IEnumerable<T> ToEnumerable<T>(this T[,] source, int sizeX, int sizeY) =>
         Enumerable.Range(0, sizeX)
             .SelectMany(x => Enumerable.Range(0, sizeY).Select(y => (x, y)))

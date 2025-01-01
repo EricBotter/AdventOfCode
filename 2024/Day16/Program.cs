@@ -27,7 +27,9 @@ for (var j = 0; j < sizeX; j++)
 var pastWeights = new Dictionary<(Location, Direction), int>();
 
 var activePaths = new LinkedList<Path>();
-activePaths.AddLast(new Path(start, Direction.East, 0));
+activePaths.AddLast(new Path(start, Direction.East, 0, []));
+
+var finalPaths = new List<Path>();
 
 while (activePaths.Count > 0)
 {
@@ -36,17 +38,48 @@ while (activePaths.Count > 0)
 
     if (!PathWeightExists(current))
     {
+        if (current.Loc == end)
+        {
+            finalPaths.Add(current);
+            continue;
+        }
+
         if (map.At(current.Loc.Move(current.Dir)) != '#')
         {
             activePaths.AddLast(current.MoveForward());
         }
-        activePaths.AddLast(current.RotateRight());
-        activePaths.AddLast(current.RotateLeft());
+
+        if (map.At(current.Loc.Move(current.Dir.RotateRight())) != '#')
+        {
+            activePaths.AddLast(current.RotateRight());
+        }
+
+        if (map.At(current.Loc.Move(current.Dir.RotateLeft())) != '#')
+        {
+            activePaths.AddLast(current.RotateLeft());
+        }
     }
 }
 
-var output = pastWeights.Where(pair => pair.Key.Item1 == end).Min(pair => pair.Value);
-Console.WriteLine(output);
+var bestScore = pastWeights.Where(pair => pair.Key.Item1 == end).Min(pair => pair.Value);
+var seats = finalPaths.Where(path => path.Score == bestScore).SelectMany(path => path.Previous).Append(end).ToHashSet();
+
+foreach (var seat in seats)
+{
+    map.At(seat) = 'O';
+}
+
+for (var i = 0; i < sizeY; i++)
+{
+    for (var j = 0; j < sizeX; j++)
+    {
+        Console.Write(map[j, i]);
+    }
+    Console.WriteLine();
+}
+
+var count = seats.Count;
+Console.WriteLine(count);
 
 return;
 
@@ -70,29 +103,13 @@ enum Direction
     East,
 }
 
-readonly record struct Path(Location Loc, Direction Dir, int Score)
+readonly record struct Path(Location Loc, Direction Dir, int Score, List<Location> Previous)
 {
-    public Path MoveForward() => new(Loc.Move(Dir), Dir, Score + 1);
+    public Path MoveForward() => new(Loc.Move(Dir), Dir, Score + 1, Previous.Append(Loc).ToList());
 
-    public Path RotateRight() => new(Loc, Dir switch
-    {
-        Direction.North => Direction.East,
-        Direction.East => Direction.South,
-        Direction.South => Direction.West,
-        Direction.West => Direction.North,
+    public Path RotateRight() => new(Loc, Dir.RotateRight(), Score + 1000, Previous.Append(Loc).ToList());
 
-        _ => throw new ArgumentOutOfRangeException(nameof(Dir), Dir, null)
-    }, Score + 1000);
-
-    public Path RotateLeft() => new(Loc, Dir switch
-    {
-        Direction.North => Direction.West,
-        Direction.East => Direction.North,
-        Direction.South => Direction.East,
-        Direction.West => Direction.South,
-
-        _ => throw new ArgumentOutOfRangeException(nameof(Dir), Dir, null)
-    }, Score + 1000);
+    public Path RotateLeft() => new(Loc, Dir.RotateLeft(), Score + 1000, Previous.Append(Loc).ToList());
 }
 
 readonly record struct Location(int X, int Y)
@@ -113,12 +130,22 @@ static class Exts
 {
     public static ref T At<T>(this T[,] source, Location location) => ref source[location.X, location.Y];
 
-    public static Direction Opposite(this Direction direction) => direction switch
+    public static Direction RotateRight(this Direction direction) => direction switch
     {
-        Direction.North => Direction.South,
-        Direction.East => Direction.West,
-        Direction.South => Direction.North,
-        Direction.West => Direction.East,
+        Direction.North => Direction.East,
+        Direction.East => Direction.South,
+        Direction.South => Direction.West,
+        Direction.West => Direction.North,
+
+        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+    };
+
+    public static Direction RotateLeft(this Direction direction) => direction switch
+    {
+        Direction.North => Direction.West,
+        Direction.East => Direction.North,
+        Direction.South => Direction.East,
+        Direction.West => Direction.South,
 
         _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
     };
