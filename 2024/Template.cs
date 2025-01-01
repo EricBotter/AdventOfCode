@@ -61,6 +61,16 @@ static class Exts
 {
     public static ref T At<T>(this T[,] source, Location location) => ref source[location.X, location.Y];
 
+    public static Direction Opposite(this Direction direction) => direction switch
+    {
+        Direction.North => Direction.South,
+        Direction.East => Direction.West,
+        Direction.South => Direction.North,
+        Direction.West => Direction.East,
+
+        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+    };
+
     public static IEnumerable<T> ToEnumerable<T>(this T[,] source, int sizeX, int sizeY) =>
         Enumerable.Range(0, sizeX)
             .SelectMany(x => Enumerable.Range(0, sizeY).Select(y => (x, y)))
