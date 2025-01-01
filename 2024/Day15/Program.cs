@@ -2,18 +2,26 @@
 
 var lines = sections[0].Split("\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-var sizeX = lines[0].Length;
+var sizeX = lines[0].Length * 2;
 var sizeY = lines.Length;
 
 var map = new char[sizeX, sizeY];
 
 var robot = new Location(0, 0);
 for (var i = 0; i < sizeY; i++)
-for (var j = 0; j < sizeX; j++)
+for (var j = 0; j < lines[0].Length; j++)
 {
-    map[j, i] = lines[i][j];
-    if (map[j, i] == '@')
-        robot = new Location(j, i);
+    (map[j * 2, i], map[j * 2 + 1, i]) = lines[i][j] switch
+    {
+        '#' => ('#', '#'),
+        'O' => ('[', ']'),
+        '.' => ('.', '.'),
+        '@' => ('@', '.'),
+
+        _ => throw new Exception("parse ur map better, u scrub")
+    };
+    if (lines[i][j] == '@')
+        robot = new Location(j * 2, i);
 }
 
 var commands = sections[1].Replace("\n", "");
@@ -35,21 +43,79 @@ foreach (var command in commands)
     if (facingBlock == '#')
         continue;
 
-    if (facingBlock == 'O')
+    if (facingBlock is '[' or ']')
     {
-        while (facingBlock == 'O')
+        if (direction is Direction.East or Direction.West)
         {
-            facingLocation = facingLocation.Move(direction);
-            facingBlock = map.At(facingLocation);
-        }
-        if (facingBlock == '#')
-            continue;
+            while (facingBlock is '[' or ']')
+            {
+                facingLocation = facingLocation.Move(direction).Move(direction);
+                facingBlock = map.At(facingLocation);
+            }
+            if (facingBlock == '#')
+                continue;
 
-        while (facingLocation != robot)
+            while (facingLocation != robot)
+            {
+                var previousLocation = facingLocation.Move(direction.Opposite());
+                map.At(facingLocation) = map.At(previousLocation);
+                facingLocation = previousLocation;
+            }
+        }
+        else
         {
-            var previousLocation = facingLocation.Move(direction.Opposite());
-            map.At(facingLocation) = map.At(previousLocation);
-            facingLocation = previousLocation;
+            var pushingLocations = new HashSet<Location>
+            {
+                facingLocation,
+                facingBlock == ']'
+                    ? facingLocation.Move(Direction.West)
+                    : facingLocation.Move(Direction.East)
+            };
+
+            var locationsToMove = new Stack<HashSet<Location>>();
+            locationsToMove.Push(pushingLocations);
+
+            while (pushingLocations.Select(loc => loc.Move(direction)).All(loc => map.At(loc) != '#')
+                   && pushingLocations.Select(loc => loc.Move(direction)).Any(loc => map.At(loc) != '.'))
+            {
+                var newLocations = new HashSet<Location>();
+                foreach (var location in pushingLocations.Select(loc => loc.Move(direction)))
+                {
+                    switch (map.At(location))
+                    {
+                        case '[':
+                            newLocations.Add(location);
+                            newLocations.Add(location.Move(Direction.East));
+                            break;
+                        case ']':
+                            newLocations.Add(location);
+                            newLocations.Add(location.Move(Direction.West));
+                            break;
+                    }
+                }
+
+                pushingLocations = newLocations;
+                locationsToMove.Push(pushingLocations);
+            }
+
+            if (pushingLocations.Select(loc => loc.Move(direction)).All(loc => map.At(loc) != '#'))
+            {
+                while (locationsToMove.Count > 0)
+                {
+                    foreach (var sourceLocation in locationsToMove.Pop())
+                    {
+                        var destinationLocation = sourceLocation.Move(direction);
+                        map.At(destinationLocation) = map.At(sourceLocation);
+                        map.At(sourceLocation) = '.';
+                    }
+                }
+            }
+            else
+            {
+                continue;
+            }
+
+            map.At(robot.Move(direction)) = '@';
         }
 
         map.At(robot) = '.';
@@ -68,7 +134,7 @@ for (var x = 0; x < sizeX; x++)
 for (var y = 0; y < sizeY; y++)
 {
     var location = new Location(x, y);
-    if (map.At(location) == 'O')
+    if (map.At(location) == '[')
         sum += 100 * y + x;
 }
 
